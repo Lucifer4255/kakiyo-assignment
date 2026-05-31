@@ -1,14 +1,14 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
-import { useProspects, useCreateProspect } from "@/hooks/use-prospects";
+import { useProspects, useCreateProspect, useDeleteProspect } from "@/hooks/use-prospects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Plus, ChevronRight, X, ImagePlus } from "lucide-react";
+import { Plus, ChevronRight, X, ImagePlus, Trash2 } from "lucide-react";
 
 const STATUS_COLORS = {
   pending: "secondary",
@@ -31,6 +31,17 @@ function fileToBase64(file: File): Promise<string> {
 export default function ProspectsPage() {
   const { data: prospects, isLoading } = useProspects();
   const create = useCreateProspect();
+  const del = useDeleteProspect();
+
+  function handleDelete(e: React.MouseEvent, id: string, pname: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm(`Delete "${pname}"? This also removes its conversations and messages.`)) return;
+    del.mutate(id, {
+      onSuccess: () => toast.success("Prospect deleted"),
+      onError: (err) => toast.error(err.message),
+    });
+  }
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
   const [sources, setSources] = useState<Source[]>([{ type: "github", value: "" }]);
@@ -209,7 +220,17 @@ export default function ProspectsPage() {
                       {p.enrichmentStatus}
                     </Badge>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-zinc-400" />
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => handleDelete(e, p.id, p.name)}
+                    >
+                      <Trash2 className="h-4 w-4 text-zinc-400" />
+                    </Button>
+                    <ChevronRight className="h-4 w-4 text-zinc-400" />
+                  </div>
                 </CardContent>
               </Card>
             </Link>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { prospect, prospectSource, conversation, message } from "@/lib/db/schema";
-import { eq, and, asc, desc } from "drizzle-orm";
+import { eq, and, asc, desc, inArray } from "drizzle-orm";
 import { requireUser } from "@/lib/auth-helpers";
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -71,9 +71,26 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
   if (error) return error;
   const { id } = await params;
 
-  await db
-    .delete(prospect)
+  // Verify ownership before cascading
+  const [owned] = await db
+    .select({ id: prospect.id })
+    .from(prospect)
     .where(and(eq(prospect.id, id), eq(prospect.userId, user.id)));
+  if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // No DB-level cascade (FKs are plain columns) — delete children in app code:
+  // messages → conversations → sources → prospect.
+  const convs = await db
+    .select({ id: conversation.id })
+    .from(conversation)
+    .where(eq(conversation.prospectId, id));
+  const convIds = convs.map((c) => c.id);
+  if (convIds.length) {
+    await db.delete(message).where(inArray(message.conversationId, convIds));
+    await db.delete(conversation).where(eq(conversation.prospectId, id));
+  }
+  await db.delete(prospectSource).where(eq(prospectSource.prospectId, id));
+  await db.delete(prospect).where(eq(prospect.id, id));
 
   return NextResponse.json({ ok: true });
 }
