@@ -2,7 +2,7 @@
 
 Generate hyper-personalized cold outreach, manage prospects, and handle replies — AI-powered end to end. You add a prospect (GitHub URL, any web URL, and/or LinkedIn screenshots), the app enriches them into a structured profile, and generation writes a message grounded in that profile plus your offering and your custom prompt. Paste a reply and it continues the thread naturally.
 
-**Live demo:** _<add Vercel URL>_ · **Walkthrough video:** _<add link>_
+**Live demo:** https://kakiyo-assignment-eight.vercel.app · **Walkthrough video:** _<add link>_
 
 ---
 
@@ -66,18 +66,43 @@ Prospect inputs            Enrichment                 Structured profile
 
 ---
 
-## Example: input → output
+## Examples: input → output
 
-**Offering:** hiring a Backend/AI Engineer at Kakiyo.
-**Prospect:** enriched from a GitHub profile + 3 LinkedIn screenshots (shipped an agentic legal-AI platform).
+These are **real, unedited outputs from the app's database** — same pipeline a reviewer runs.
 
-> The agentic legal AI platform you shipped at aLawyer.ai — handling real-time reasoning across complex legal contexts — is exactly the kind of infrastructure work we're tackling. We're hiring a Backend/AI Engineer to own our inference pipeline… Would you be open to learning more?
+### Example 1 — Hiring outreach + reply continuity
 
-**Then the prospect replies:** _"Thanks! I'm happy where I am, but what's the comp range?"_
+**Prospect:** *Suhotra Dey* — enriched from a GitHub profile + LinkedIn screenshots. Synthesised hooks the model latched onto: *"built aLawyer.ai at Buildway (NVIDIA Inception / Google for Startups-backed)… gnarly multi-agent context bugs"*, *"SliceMate pizza-ordering app on GitHub — from agentic law to pepperoni"*, *"MCP in your headline"*.
+**Offering:** `Kakiyo – hiring` (Backend/AI Engineer, agent infrastructure). **Prompt:** `Recruiter — conversational`.
 
-> Totally fair — glad you're in a good spot! Compensation is competitive, and I'd be happy to share specifics if you ever want to hop on a quick call. No pressure either way.
+**Generated opener:**
+> The agentic legal AI platform you shipped at aLawyer.ai—handling real-time reasoning across complex legal contexts—is exactly the kind of infrastructure work we're tackling. We're hiring a Backend/AI Engineer to own our inference pipeline and agent architecture for fully autonomous sales conversations. You'd design the LLM orchestration, concurrency, and safety layers that let an agent reason through objections and close deals without human intervention. Would you be open to learning more?
 
-_(The follow-up addresses the actual question and stays in voice, without inventing a number.)_
+**Prospect replies:** *"Thanks for reaching out, may I know what's the compensation?"*
+> Compensation is competitive and aligned with market for this kind of ownership-heavy AI infrastructure role—happy to share the specific range and structure on a quick call. Would that work?
+
+**Prospect:** *"okay sure can we hop on a call?"*
+> Great, what time works best for you this week? I'll send over a calendar link so you can pick a slot.
+
+*Note the second turn: asked for comp, it says "competitive" and offers a call — it never invents a number (the grounding guard).*
+
+### Example 2 — Sales outreach (different offering + prompt → different voice)
+
+**Prospect:** *Firoz Khan* — Growth & Marketing Head at DigiCredit (FinTech), enriched from LinkedIn. Hook: a post about *W. Edwards Deming* → "you think about systems, not just campaigns."
+**Offering:** `Kakiyo – Sales Outreach`. **Prompt:** `Sales Outreach` (warm, under 150 words).
+
+**Generated opener:**
+> Saw your post on W. Edwards Deming—not the usual marketing share. Tells me you think about systems, not just campaigns. As a growth head in FinTech, you're likely refiguring how to scale pipeline without burning budget or risking accounts with spammy tools. We built Kakiyo to do exactly that on LinkedIn: AI that writes every message unique, adapts replies in real time, qualifies before connecting, and books meetings—no templates, no extensions, no risk. One team got 65 qualified leads from 500 messages. Curious if that could work for DigiCredit's acquisition funnel?
+
+### Example 3 — Branching: the same reply, re-toned
+
+From Example 2, the prospect asks *"Can you tell me more about your product."* The default follow-up is warm and narrative. Using **Branch → Direct** on that message produces an alternative the user can keep alongside the original:
+
+**Default (warm):**
+> Your Deming post stuck with me—systems thinking, not just channel tactics. That's the gap Kakiyo fills on LinkedIn: a system that runs full, human-feeling conversations at scale… *(continues, narrative)*
+
+**Branch · Direct:**
+> Sure. Kakiyo is an AI-driven sales engine that works on LinkedIn without any browser extensions. It writes every message uniquely from scratch, referencing a prospect's profile, and adapts replies in real time—no templates, no copy-paste. Before a connection request even goes out, it pre-qualifies interest. Then it books meetings directly into your calendar… One FinTech growth team sent 500 messages and got 180 conversations, 65 qualified leads, and 28 meetings. Want to see an actual conversation thread with a FinTech decision-maker?
 
 ---
 
