@@ -67,6 +67,10 @@ export const conversation = pgTable(
     prospectId: text("prospect_id").notNull(),
     offeringId: text("offering_id").notNull(),
     promptId: text("prompt_id").notNull(),
+    // Branching: a conversation re-toned from a message of another conversation
+    parentId: text("parent_id"),
+    branchFromMessageId: text("branch_from_message_id"),
+    branchTone: text("branch_tone"),
     ...timestamps(),
   },
   (t) => [index("conversation_prospect_id_idx").on(t.prospectId)]
@@ -82,6 +86,9 @@ export const message = pgTable(
     tone: text("tone"),
     rating: integer("rating"),
     isFavorite: boolean("is_favorite").notNull().default(false),
+    // True for prefix messages copied into a branch — kept as generation context
+    // but hidden in the branch's UI (they aren't regenerated).
+    inherited: boolean("inherited").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [index("message_conversation_id_idx").on(t.conversationId)]

@@ -71,7 +71,9 @@ type ReplyInput = {
   offeringContent: string;
   profile: ProspectProfile;
   thread: { role: "assistant" | "prospect"; content: string }[];
+  tone?: string | null;
   onFinish?: OnFinish;
+  onError?: (error: unknown) => void | Promise<void>;
 };
 
 /** Reply continuation (§5.4d) — full thread as message history. */
@@ -80,12 +82,15 @@ export function generateReply({
   offeringContent,
   profile,
   thread,
+  tone,
   onFinish,
+  onError,
 }: ReplyInput) {
-  const system =
+  let system =
     systemPrompt +
     REPLY_GUARD +
     `\n\nOFFERING: ${offeringContent}\nPROSPECT: ${renderProfile(profile)}`;
+  if (tone) system += `\n\nFor this version, write it: ${tone}`;
 
   const messages: ModelMessage[] = thread.map((m) => ({
     role: m.role === "assistant" ? "assistant" : "user",
@@ -98,5 +103,6 @@ export function generateReply({
     messages,
     maxRetries: 1,
     onFinish: onFinish ? ({ text }) => onFinish(text) : undefined,
+    onError: onError ? ({ error }) => onError(error) : undefined,
   });
 }

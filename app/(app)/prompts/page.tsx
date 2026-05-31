@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { usePrompts, useCreatePrompt, useUpdatePrompt, useDeletePrompt } from "@/hooks/use-prompts";
 import type { Prompt } from "@/hooks/use-prompts";
+import { useAssist } from "@/hooks/use-assist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Plus, Trash2, Star } from "lucide-react";
+import { Plus, Trash2, Star, Sparkles } from "lucide-react";
 
 const DEFAULT_SYSTEM_PROMPT = `You write cold outreach messages that are short, specific, and human.
 Rules: no fluff, no "I hope this finds you well", no generic compliments.
@@ -20,14 +21,17 @@ export default function PromptsPage() {
   const create = useCreatePrompt();
   const update = useUpdatePrompt();
   const del = useDeletePrompt();
+  const assist = useAssist();
 
   const [editing, setEditing] = useState<Prompt | null>(null);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ name: "", systemPrompt: DEFAULT_SYSTEM_PROMPT });
+  const [guidance, setGuidance] = useState("");
 
   function startCreate() {
     setEditing(null);
     setForm({ name: "", systemPrompt: DEFAULT_SYSTEM_PROMPT });
+    setGuidance("");
     setCreating(true);
   }
 
@@ -35,6 +39,23 @@ export default function PromptsPage() {
     setCreating(false);
     setEditing(p);
     setForm({ name: p.name, systemPrompt: p.systemPrompt });
+    setGuidance("");
+  }
+
+  async function handleGenerate() {
+    if (!guidance.trim() && !form.systemPrompt.trim()) {
+      return toast.error("Describe the prompt you want, or start from a draft");
+    }
+    const result = await assist
+      .mutateAsync({ kind: "prompt", text: form.systemPrompt, instruction: guidance })
+      .catch((e) => {
+        toast.error(e.message);
+        return null;
+      });
+    if (result) {
+      setForm((f) => ({ ...f, systemPrompt: result.improved }));
+      toast.success("Prompt generated");
+    }
   }
 
   async function handleSave() {
@@ -46,6 +67,7 @@ export default function PromptsPage() {
       await create.mutateAsync(form).catch((e) => toast.error(e.message));
       setCreating(false);
     }
+    setGuidance("");
     toast.success("Saved");
   }
 
@@ -72,8 +94,23 @@ export default function PromptsPage() {
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             />
+
+            {/* Describe the prompt → AI drafts the system prompt (refines the draft below if present) */}
+            <div className="flex gap-2">
+              <Input
+                placeholder='What should this prompt do? e.g. "warm, concise, lead with a pain point"'
+                value={guidance}
+                onChange={(e) => setGuidance(e.target.value)}
+                className="flex-1"
+              />
+              <Button variant="outline" size="sm" onClick={handleGenerate} disabled={assist.isPending}>
+                <Sparkles className="h-4 w-4 mr-1" />
+                {assist.isPending ? "Generating…" : "Generate"}
+              </Button>
+            </div>
+
             <Textarea
-              placeholder="System prompt — sent verbatim to the AI"
+              placeholder="System prompt — sent verbatim to the AI. Edit directly, or use Generate above to draft it."
               value={form.systemPrompt}
               onChange={(e) => setForm((f) => ({ ...f, systemPrompt: e.target.value }))}
               rows={8}
@@ -91,7 +128,7 @@ export default function PromptsPage() {
                   <Star className="h-4 w-4 mr-1" /> Set default
                 </Button>
               )}
-              <Button variant="ghost" onClick={() => { setCreating(false); setEditing(null); }}>
+              <Button variant="ghost" onClick={() => { setCreating(false); setEditing(null); setGuidance(""); }}>
                 Cancel
               </Button>
             </div>

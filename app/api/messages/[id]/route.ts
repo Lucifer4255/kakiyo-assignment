@@ -44,13 +44,14 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
 
   await db.delete(message).where(eq(message.id, id));
 
-  // If that was the last message in the thread, remove the now-empty conversation
-  // so it doesn't linger as a blank card.
+  // If no real (non-inherited) messages remain, remove the now-empty conversation
+  // so it doesn't linger as a blank card. Inherited branch-prefix copies don't count.
   const remaining = await db
     .select({ id: message.id })
     .from(message)
-    .where(eq(message.conversationId, owned.conversationId));
+    .where(and(eq(message.conversationId, owned.conversationId), eq(message.inherited, false)));
   if (remaining.length === 0) {
+    await db.delete(message).where(eq(message.conversationId, owned.conversationId));
     await db.delete(conversation).where(eq(conversation.id, owned.conversationId));
   }
 

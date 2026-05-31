@@ -8,6 +8,7 @@ export type Message = {
   tone: string | null;
   rating: number | null;
   isFavorite: boolean;
+  inherited: boolean;
   createdAt: string;
 };
 

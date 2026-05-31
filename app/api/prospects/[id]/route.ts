@@ -41,7 +41,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
         return { ...c, messages };
       })
     )
-  ).filter((c) => c.messages.length > 0);
+  ).filter((c) => c.messages.some((m) => !m.inherited));
 
   return NextResponse.json({ ...row, sources, conversations });
 }

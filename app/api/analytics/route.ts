@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { prospect, offering, conversation, message } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { requireUser } from "@/lib/auth-helpers";
 
 export async function GET() {
@@ -26,7 +26,8 @@ export async function GET() {
       })
       .from(message)
       .innerJoin(conversation, eq(message.conversationId, conversation.id))
-      .where(eq(conversation.userId, user.id)),
+      // Exclude inherited branch copies so they don't double-count.
+      .where(and(eq(conversation.userId, user.id), eq(message.inherited, false))),
   ]);
 
   const assistantMsgs = msgs.filter((m) => m.role === "assistant");
