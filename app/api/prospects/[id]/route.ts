@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { prospect, prospectSource, conversation, message } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc, desc } from "drizzle-orm";
 import { requireUser } from "@/lib/auth-helpers";
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -21,10 +21,27 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     .from(prospectSource)
     .where(eq(prospectSource.prospectId, id));
 
-  const conversations = await db
+  const convRows = await db
     .select()
     .from(conversation)
-    .where(and(eq(conversation.prospectId, id), eq(conversation.userId, user.id)));
+    .where(and(eq(conversation.prospectId, id), eq(conversation.userId, user.id)))
+    .orderBy(desc(conversation.createdAt));
+
+  // Attach messages to each conversation (oldest first within a thread).
+  // Drop empty conversations — a failed generation can leave a row with no
+  // messages, which would otherwise render as a blank card.
+  const conversations = (
+    await Promise.all(
+      convRows.map(async (c) => {
+        const messages = await db
+          .select()
+          .from(message)
+          .where(eq(message.conversationId, c.id))
+          .orderBy(asc(message.createdAt));
+        return { ...c, messages };
+      })
+    )
+  ).filter((c) => c.messages.length > 0);
 
   return NextResponse.json({ ...row, sources, conversations });
 }

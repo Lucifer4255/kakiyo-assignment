@@ -1,0 +1,36 @@
+diff --git a/node_modules/@better-auth/kysely-adapter/dist/bun-sqlite-dialect-DzNwOpKv.mjs b/node_modules/@better-auth/kysely-adapter/dist/bun-sqlite-dialect-DzNwOpKv.mjs
+index adfbfd3..c695d82 100644
+--- a/node_modules/@better-auth/kysely-adapter/dist/bun-sqlite-dialect-DzNwOpKv.mjs
++++ b/node_modules/@better-auth/kysely-adapter/dist/bun-sqlite-dialect-DzNwOpKv.mjs
+@@ -1,4 +1,6 @@
+-import { CompiledQuery, DEFAULT_MIGRATION_LOCK_TABLE, DEFAULT_MIGRATION_TABLE, DefaultQueryCompiler, sql } from "kysely";
++import { CompiledQuery, DefaultQueryCompiler, sql } from "kysely";
++const DEFAULT_MIGRATION_TABLE = "kysely_migration";
++const DEFAULT_MIGRATION_LOCK_TABLE = "kysely_migration_lock";
+ //#region src/bun-sqlite-dialect.ts
+ var BunSqliteAdapter = class {
+ 	get supportsCreateIfNotExists() {
+diff --git a/node_modules/@better-auth/kysely-adapter/dist/d1-sqlite-dialect-C2B7YsIT.mjs b/node_modules/@better-auth/kysely-adapter/dist/d1-sqlite-dialect-C2B7YsIT.mjs
+index 1545e42..6e900a2 100644
+--- a/node_modules/@better-auth/kysely-adapter/dist/d1-sqlite-dialect-C2B7YsIT.mjs
++++ b/node_modules/@better-auth/kysely-adapter/dist/d1-sqlite-dialect-C2B7YsIT.mjs
+@@ -1,4 +1,6 @@
+-import { DEFAULT_MIGRATION_LOCK_TABLE, DEFAULT_MIGRATION_TABLE, SqliteAdapter, SqliteQueryCompiler } from "kysely";
++import { SqliteAdapter, SqliteQueryCompiler } from "kysely";
++const DEFAULT_MIGRATION_TABLE = "kysely_migration";
++const DEFAULT_MIGRATION_LOCK_TABLE = "kysely_migration_lock";
+ //#region src/d1-sqlite-dialect.ts
+ var D1SqliteAdapter = class extends SqliteAdapter {};
+ var D1SqliteDriver = class {
+diff --git a/node_modules/@better-auth/kysely-adapter/dist/node-sqlite-dialect.mjs b/node_modules/@better-auth/kysely-adapter/dist/node-sqlite-dialect.mjs
+index 878100c..9e0e61a 100644
+--- a/node_modules/@better-auth/kysely-adapter/dist/node-sqlite-dialect.mjs
++++ b/node_modules/@better-auth/kysely-adapter/dist/node-sqlite-dialect.mjs
+@@ -1,4 +1,6 @@
+-import { CompiledQuery, DEFAULT_MIGRATION_LOCK_TABLE, DEFAULT_MIGRATION_TABLE, DefaultQueryCompiler, sql } from "kysely";
++import { CompiledQuery, DefaultQueryCompiler, sql } from "kysely";
++const DEFAULT_MIGRATION_TABLE = "kysely_migration";
++const DEFAULT_MIGRATION_LOCK_TABLE = "kysely_migration_lock";
+ //#region src/node-sqlite-dialect.ts
+ var NodeSqliteAdapter = class {
+ 	get supportsCreateIfNotExists() {

@@ -20,6 +20,14 @@ export function useProspects() {
   return useQuery<Prospect[]>({
     queryKey: ["prospects"],
     queryFn: () => fetch$("/api/prospects"),
+    // Poll while any prospect is still enriching so badges update live
+    refetchInterval: (query) => {
+      const rows = query.state.data as Prospect[] | undefined;
+      const anyPending = rows?.some(
+        (p) => p.enrichmentStatus === "pending" || p.enrichmentStatus === "enriching"
+      );
+      return anyPending ? 2500 : false;
+    },
   });
 }
 
@@ -28,6 +36,12 @@ export function useProspect(id: string) {
     queryKey: ["prospects", id],
     queryFn: () => fetch$(`/api/prospects/${id}`),
     enabled: !!id,
+    // Poll while enrichment is in progress so the profile appears on its own
+    refetchInterval: (query) => {
+      const status = (query.state.data as { enrichmentStatus?: string } | undefined)
+        ?.enrichmentStatus;
+      return status === "pending" || status === "enriching" ? 2000 : false;
+    },
   });
 }
 

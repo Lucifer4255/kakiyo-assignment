@@ -8,13 +8,14 @@ import {
   useScrapeOffering,
 } from "@/hooks/use-offerings";
 import type { Offering } from "@/hooks/use-offerings";
+import { useAssist } from "@/hooks/use-assist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Plus, Trash2, Globe } from "lucide-react";
+import { Plus, Trash2, Globe, Sparkles } from "lucide-react";
 
 export default function OfferingsPage() {
   const { data: offerings, isLoading } = useOfferings();
@@ -22,11 +23,13 @@ export default function OfferingsPage() {
   const update = useUpdateOffering();
   const del = useDeleteOffering();
   const scrape = useScrapeOffering();
+  const assist = useAssist();
 
   const [editing, setEditing] = useState<Offering | null>(null);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ name: "", content: "", sourceUrl: "" });
   const [scrapeUrl, setScrapeUrl] = useState("");
+  const [guidance, setGuidance] = useState("");
 
   function startCreate() {
     setEditing(null);
@@ -49,6 +52,22 @@ export default function OfferingsPage() {
     if (result) {
       setForm((f) => ({ ...f, content: result.suggestedContent, sourceUrl: scrapeUrl }));
       toast.success("Scraped and summarised");
+    }
+  }
+
+  async function handleGenerate() {
+    if (!form.content.trim() && !guidance.trim()) {
+      return toast.error("Add guidance, a draft, or scraped content first");
+    }
+    const result = await assist
+      .mutateAsync({ kind: "offering", text: form.content, instruction: guidance })
+      .catch((e) => {
+        toast.error(e.message);
+        return null;
+      });
+    if (result) {
+      setForm((f) => ({ ...f, content: result.improved }));
+      toast.success("Offering generated");
     }
   }
 
@@ -79,30 +98,41 @@ export default function OfferingsPage() {
             <CardTitle className="text-base">{editing ? "Edit offering" : "New offering"}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
+            {/* Step 1: optional raw material from a URL */}
             <div className="flex gap-2">
               <Input
-                placeholder="Scrape a URL to auto-fill content"
+                placeholder="Optional: scrape a URL for raw material"
                 value={scrapeUrl}
                 onChange={(e) => setScrapeUrl(e.target.value)}
                 className="flex-1"
               />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleScrape}
-                disabled={scrape.isPending}
-              >
+              <Button variant="outline" size="sm" onClick={handleScrape} disabled={scrape.isPending}>
                 <Globe className="h-4 w-4 mr-1" />
                 {scrape.isPending ? "Scraping…" : "Scrape"}
               </Button>
             </div>
+
+            {/* Step 2: guidance → AI generates the final offering */}
+            <div className="flex gap-2">
+              <Input
+                placeholder='What should this offering be? e.g. "a hiring pitch for backend/AI engineers"'
+                value={guidance}
+                onChange={(e) => setGuidance(e.target.value)}
+                className="flex-1"
+              />
+              <Button variant="outline" size="sm" onClick={handleGenerate} disabled={assist.isPending}>
+                <Sparkles className="h-4 w-4 mr-1" />
+                {assist.isPending ? "Generating…" : "Generate"}
+              </Button>
+            </div>
+
             <Input
               placeholder="Name"
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             />
             <Textarea
-              placeholder="Offering content — what you do, who you serve, why it's different."
+              placeholder="Offering content — edit directly, or use Scrape + Generate above to draft it."
               value={form.content}
               onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
               rows={6}
@@ -111,7 +141,7 @@ export default function OfferingsPage() {
               <Button onClick={handleSave} disabled={create.isPending || update.isPending}>
                 Save
               </Button>
-              <Button variant="ghost" onClick={() => { setCreating(false); setEditing(null); }}>
+              <Button variant="ghost" onClick={() => { setCreating(false); setEditing(null); setGuidance(""); }}>
                 Cancel
               </Button>
             </div>

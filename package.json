@@ -8,14 +8,14 @@
     "start": "next start",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "postinstall": "patch-package"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.67",
     "@base-ui/react": "^1.5.0",
     "@better-auth/infra": "^0.2.11",
     "@mendable/firecrawl-js": "^4.25.1",
-    "@neondatabase/serverless": "^1.1.0",
+    "@openrouter/ai-sdk-provider": "^2.9.0",
     "@tanstack/react-query": "^5.100.14",
     "ai": "^6.0.193",
     "better-auth": "^1.6.12",
@@ -42,6 +42,7 @@
     "@types/react-dom": "^19",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
+    "patch-package": "^8.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

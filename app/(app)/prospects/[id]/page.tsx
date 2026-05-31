@@ -5,6 +5,7 @@ import type { ProspectProfile } from "@/lib/ai/schema";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GeneratePanel } from "@/components/generate-panel";
 
 const STATUS_COLORS = {
   pending: "secondary",
@@ -124,8 +125,13 @@ export default function ProspectPage() {
         </CardContent>
       </Card>
 
-      <div className="text-sm text-zinc-400 p-4 border rounded-lg bg-zinc-50">
-        Generate panel — coming in P3.
+      <div className="mt-2">
+        <h2 className="text-sm font-semibold text-zinc-700 mb-3">Outreach</h2>
+        <GeneratePanel
+          prospectId={id}
+          ready={data.enrichmentStatus === "ready"}
+          conversations={data.conversations ?? []}
+        />
       </div>
     </div>
   );
